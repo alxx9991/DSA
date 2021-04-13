@@ -1,0 +1,28 @@
+sensors <- {x1, x2, x3, ... , xn}
+distances <- {}
+pairs <- {}
+r <- r
+
+ptr <- 0
+while (ptr < len(sensors) - 1):
+    distances.append(sensors[ptr+1] - sensors[ptr])
+    ptr ++
+
+while ( i < len(distances)):
+    if (distances[i] > r):
+        i ++
+        continue
+
+    chain = 0
+    while (distances[i] <= 2):
+        i ++
+        chain ++
+        for (j in [0, chain]):
+            pairs.append((i - chain + j), i)
+    
+        if (i == len(distances)):
+            break
+    
+
+
+

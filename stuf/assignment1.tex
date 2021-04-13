@@ -1,0 +1,123 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2cm]{geometry}
+\usepackage{fullpage,enumitem,amssymb,amsmath,xcolor,cancel,gensymb,hyperref,graphicx}
+\usepackage{indentfirst}
+\setlength{\parskip}{1em}
+
+%\begin{align*}…\end{align*} if you want to fit an equation. 
+%FOR PICTURES: include graphicsx 
+%\includegraphics[scale=x]{name}
+%double space and write caption in the center classshe 
+
+\title{Collingwood Template}
+\author{Krishna Panchap}
+\date{February 28th, 2021}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Problem 1}
+The push operation remains in O(1) time as it is unchanged. In a pop operation, the worst case scenario is that in a stack of n integers, we attempt to push an integer which is smaller than every single other integer. In this case, the running time of this operation is O(n) as every integer must be popped to push this new integer.
+
+Now assume that we have k integers on the stack and we want to calculate the amortized running time of n push operations. In the best case scenario, we push integers in order and we never need to pop anything. Then for n integers, we will need omega(n) time.
+
+In the worst case scenario, the nth integer we add is the smallest integer out of everything that we already have. In this case, every element we have pushed, minus the last one, as been pushed and then popped, giving a total of 2 operations per integer. Every integer already on the stack is only popped, giving a total of 1 operation per integer. Then the running time is O(2n-1+k) = O(n+k) = O(n). We simplify O(n+k) to O(n) as when n is arbitrarily large k is insignificant.
+
+\section{Problem 2}
+
+\textbf{a.}
+Initialise the data structure by defining a region of k * sizeof(e) + 2*sizeof(int) contiguous bits in memory. Initially the head pointer will be empty, the tail pointer will be empty and we will have two integers, one describing the starting index and one describing the end. Initially, both are set to zero.
+
+This is an array like structure, which will behave as follows:
+
+Operations on the front:
+If we add an element to the end, the end index will increase by 1. If we remove an element from the end, the end index will decrease by 1. The last element is accessible by offsetting the first memory address with the end index.
+
+Operations on the rear:
+If we remove an element from the front, the start index will increase by 1. I.e. the first element in the array will have an index of 1.
+If we add an element in the front, the start index will decrease by 1.
+
+If the index becomes negative, it wraps around to the end. So if we attempt to store an integer in the -1 index, instead it will be stored in the k-th index. If the index exceeds the k-th index, it will wrap around to the front. E.g. if we attempt to store an integer in the k-th index, it will be stored in the 0-th index instead.
+
+It is guaranteed that there will be space to wrap around, as the total number of elements will not exceed k.
+
+Now, we can access and set elements by using the start index as an offset. So if we have a start index at 3 and and end index at 5 (i.e. 3 elements in the list total), and we wish to access the 2nd element, we can calculate the address as follows: 
+
+We ordinarily want the 1st index, however as the start index is 3, we need to add 3 to it, so we will get the data in the 4th memory block. We generalise this as accessing the (i-th + start index) element. The wrap around technique still works here when calculating the index - if the post-calculation index exceeds k, it will wrap to the zero.
+
+
+\textbf{b.}
+This data structure is correct as all the operations can be performed in constant time.
+
+A normal array object will allow us to access its elements in constant time. Without indexing, the we will not be able to access the i-th element in constant time.
+
+So we will use a modified array structure, but we must fix a few issues.
+
+The issue for an array object is that if we add or remove from the front, the index of every object must be changed, and hence it will be a linear time operation. To make it constant time, we have an integer which describes the index of the first element, so we do not have to change the indices when an element is added or removed from the front.
+
+This creates another issue. If we constantly remove from the front, and add to the back, the array will reach the end of its memory allocation. Resizing the array is a linear time operation so we will not do it. Instead, we will wrap the array around to the front, and we know there will always be space to do so as it is assumed there is a maximum of k elements. The same method can be applied to an overflow at the front of the memory.
+
+Now we are able to remove/add from the front and back in constant time by referencing the index using and then updating the start/end index. We can also set elements by using the required element index minus the start index to get the actual location in memory, which is in constant time too.
+
+
+\textbf{c.}
+Add to back:
+- Get the current end index -> O(1)
+- Add one to the end index, and then put the new element in that address. -> O(1)
+- If new end index > k-1, then new end index -= k -> O(1)
+Hence this operation is in O(3) = O(1) time.
+
+Remove from back:
+- Get the current end index -> O(1)
+- Delete the element in the end index, then subtract one from the end index. -> O(1)
+- If new end index < 0, then new end index += k -> O(1)
+Hence this operation is also in O(1) time.
+
+Add to front:
+- Get the current start index -> O(1)
+- Subtract 1 from the start index, and then put the new element in that address. -> O(1)
+- If new start index < 0, then new start index += k -> O(1)
+Hence this operation is in O(1) time.
+
+Remove from front:
+- Get the current start index -> O(1)
+- Delete the element in the start index, then add one to the start index index. -> O(1)
+- If new start index > k-1, then new start index -= k -> O(1)
+Hence this operation is in O(1) time as well.
+
+Set i-th element:
+- Go to the address of the i-th element by going to the i-th plus start index element. -> O(1)
+- Set the element to the new element. -> O(1)
+Hence this operation is in O(1) time.
+
+\section{Problem 3}
+
+\textbf{a.}
+Sudo code provided.
+
+\textbf{b}
+The algorithm works systematically. First the distances between each point is calculated and stored in an array - this is the only thing that is important, the actual location of each point is irrelevant. We know that we can group the sensors up into 'chains' where they are all within range of each other. If one sensor is too far away from another, it breaks the chain - no communication can happen across this gap.
+
+Now we have a pointer which will move along the list of sensors. Each time the pointer stops, we will examine if the next sensor is in range. The range is easily checked by consulting the distances array. If it is not, we simply increment the pointer without adding a pair, so if the pair is not in range, we do not add it.
+
+If the next sensor is in range, then the pointer will move to the next sensor and record down that pair.
+
+Now if the next sensor after that is also in range, then we will make use of a variable called chain, which stores the chain length. So if there are two in a row, the chain length will be 2.
+
+We can iterate through the previous chained elements to generate pairs, using the chain length as a guide to how far we should go back. For each new sensor added to this chain, it will pair with every other sensor in this chain. This will account for the sensors being able to communicate through other sensors.
+
+As soon as the next sensor is out of range, the chain will reset to 0.
+
+\textbf{c}
+The first loop iterating calculating the distances between sensors is in O(n) time, as it needs to iterate over the entire list of sensors.
+
+Now in the second loop, we have a nested while loop. However, each time the inside loop runs, the pointer is incremented by 1, so the outside loop number of runs is decreased by 1. It is the equivalent of moving the pointer to each element in the array once. Hence the two loops together run in O(n) time. 
+
+When the inside loop runs, each time it runs it will generate a pair of sensors. There is no case in which a pair of sensors is revisited. The pointer will also never move backwards. Hence over the whole loop, we will only ever add as many operations as there are pairs, so the total running time of that loop is O(n+k).
+
+The loops together are O(2n+k) which is O(n+k).
+
+\end{document}
